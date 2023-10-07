@@ -1,0 +1,74 @@
+import scala.collection.mutable.Map
+
+class InjectionMachine(var name: String, var processingTime: Int)
+
+class Product(var name: String, var stock: Int, var price: Double, var manufacturingTime: Int, var rawMaterials: Map[String, Int])
+
+class ERPSystem {
+  val products: Map[String, Product] = Map()
+  val machines: Map[String, InjectionMachine] = Map()
+
+  def addMachine(name: String, processingTime: Int): Unit = {
+    val machine = new InjectionMachine(name, processingTime)
+    machines += (name -> machine)
+  }
+
+  def addProduct(name: String, stock: Int, price: Double, manufacturingTime: Int, rawMaterials: Map[String, Int]): Unit = {
+    val product = new Product(name, stock, price, manufacturingTime, rawMaterials)
+    products += (name -> product)
+  }
+
+  def updateStock(name: String, newStock: Int): Unit = {
+    if (products.contains(name)) {
+      val product = products(name)
+      product.stock = newStock
+    } else {
+      println(s"Ürün '$name' bulunamadı.")
+    }
+  }
+
+  def produceProduct(name: String, machineName: String): Unit = {
+    if (products.contains(name) && machines.contains(machineName)) {
+      val product = products(name)
+      val machine = machines(machineName)
+      val totalProcessingTime = product.manufacturingTime * machine.processingTime
+      println(s"$name ürünü $machineName makinesinde üretiliyor. Tamamlanması için toplam süre: $totalProcessingTime saat.")
+      // Hammadde kontrolü yapılacak
+      // Eğer yeterli hammadde yoksa üretimi gerçekleştirme ve stok güncelleme işlemi yapılmayacak
+    } else {
+      println("Ürün veya makine bulunamadı.")
+    }
+  }
+
+  def listProducts(): Unit = {
+    println("Envanter:")
+    for ((name, product) <- products) {
+      println(s"Ürün: ${product.name}, Stok: ${product.stock}, Fiyat: ${product.price}, İmalat Süresi: ${product.manufacturingTime} saat")
+      println("Hammadde:")
+      for ((material, quantity) <- product.rawMaterials) {
+        println(s"$material: $quantity birim")
+      }
+      println("-----")
+    }
+  }
+}
+
+object Main extends App {
+  val erpSystem = new ERPSystem()
+
+  // Makineleri ekleyelim
+  erpSystem.addMachine("Makine1", 2)  // Örnek çalışma süresi: 2 saat
+  erpSystem.addMachine("Makine2", 3)  // Örnek çalışma süresi: 3 saat
+
+  // Ürünleri ekleyelim
+  val rawMaterials1 = Map("Plastik" -> 100, "Metal" -> 50)
+  val rawMaterials2 = Map("Plastik" -> 150, "Ahşap" -> 80)
+  erpSystem.addProduct("Ürün1", 30, 200.0, 5, rawMaterials1)
+  erpSystem.addProduct("Ürün2", 20, 300.0, 7, rawMaterials2)
+
+  // Ürünleri listeleyelim
+  erpSystem.listProducts()
+
+  // Ürün üretimini simüle edelim (Ürün1'i Makine1'de üret)
+  erpSystem.produceProduct("Ürün1", "Makine1")
+}
